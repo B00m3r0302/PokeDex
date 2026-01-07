@@ -19,7 +19,7 @@ func TestCleanInput(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		actual := cleanInput(c.input)
+		actual := CleanInput(c.input)
 		if len(c.expected) != len(actual) {
 		t.Errorf("The length of the actual slice does not match the length of the expected slice!\nInput: %s\nExpected: %d\nactual: %d", c.input, len(c.expected), len(actual))
 		}

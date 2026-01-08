@@ -13,6 +13,6 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 		words := CleanInput(input)
-		fmt.Printf("Your command was: %s\n", words[0])
+		CommandExit(words[0])
 	}
 }

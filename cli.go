@@ -2,6 +2,8 @@ package main
 
 import (
 	"strings"
+	"fmt"
+	"os"
 )
 
 func CleanInput(text string) []string {
@@ -13,4 +15,12 @@ func CleanInput(text string) []string {
 		finalList = append(finalList, list[i])
 	}
 	return finalList
+}
+
+func CommandExit(text string) error {
+	if text == "exit" {
+		fmt.Println("Closing the Pokedex... Goodbye!")
+		os.Exit(0)
+	}
+	return nil
 }

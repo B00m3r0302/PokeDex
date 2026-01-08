@@ -12,6 +12,7 @@ func main() {
 		fmt.Print("Pokedex >")
 		scanner.Scan()
 		input := scanner.Text()
-		fmt.Println(input)
+		words := CleanInput(input)
+		fmt.Printf("Your command was: %s\n", words[0])
 	}
 }

@@ -24,3 +24,17 @@ func CommandExit(text string) error {
 	}
 	return nil
 }
+
+type CliCommand struct {
+	name string
+	description string
+	callback func() error
+}
+
+map[string]CliCommand{
+	"exit": {
+		name:		"exit",
+		description:	"Exit the Pokedex",
+		callback:	CommandExit,
+	},
+}

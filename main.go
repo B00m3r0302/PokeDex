@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"os"
 )
 
@@ -13,6 +13,12 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 		words := CleanInput(input)
-		CommandExit(words[0])
+		cmd, ok := CommandsList[words[0]]
+		if ok {
+			err := cmd.callback(words[0])
+			if err != nil {
+				fmt.Println("Unknown command)")
+			}
+		}
 	}
 }

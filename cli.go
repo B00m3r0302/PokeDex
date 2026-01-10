@@ -1,9 +1,9 @@
 package main
 
 import (
-	"strings"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func CleanInput(text string) []string {
@@ -25,16 +25,32 @@ func CommandExit(text string) error {
 	return nil
 }
 
-type CliCommand struct {
-	name string
-	description string
-	callback func() error
+func CommandHelp(text string) error {
+	if text == "help" {
+		fmt.Println(
+			"Welcome to the Pokedex!\n" +
+				"Usage:\n\n" +
+				"help: Displays a help message\n" +
+				"exit: Exit the Pokedex")
+	}
+	return nil
 }
 
-map[string]CliCommand{
+type CliCommands struct {
+	name        string
+	description string
+	callback    func(string) error
+}
+
+var CommandsList = map[string]CliCommands{
 	"exit": {
-		name:		"exit",
-		description:	"Exit the Pokedex",
-		callback:	CommandExit,
+		name:        "exit",
+		description: "Exit the Pokedex",
+		callback:    CommandExit,
+	},
+	"help": {
+		name:        "help",
+		description: "Show this help message",
+		callback:    CommandHelp,
 	},
 }

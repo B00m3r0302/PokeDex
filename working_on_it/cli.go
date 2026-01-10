@@ -45,6 +45,9 @@ type CliCommands struct {
 	callback    func(string) error
 }
 
+type MapLocations struct {
+}
+
 func init() {
 	CommandsList = map[string]CliCommands{
 		"exit": {

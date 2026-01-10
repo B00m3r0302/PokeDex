@@ -1,24 +1,33 @@
-package main 
+package main
 
 import (
+	"bufio"
 	"fmt"
-	"strings"
+	"os"
 )
 
 func main() {
-	split("        Hello World!        ")
-}
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Pokedex > ")
+		if !scanner.Scan() {
+			fmt.Println()
+			return
+		}
+		input := scanner.Text()
+		words := CleanInput(input)
+		if len(words) == 0 {
+			continue
+		}
 
-func split(s string) []string {
-	list := strings.Fields(s)
-	finalList := []string{}
-	for i, word := range list {	
-		list[i] = strings.TrimSpace(word)
-		list[i] = strings.ToLower(word)
-		finalList = append(finalList, list[i])
+		cmd, ok := CommandsList[words[0]]
+		if ok {
+			if err := cmd.callback(words[0]); err != nil {
+				fmt.Println("Error:", err)
+			}
+			// do NOT print anything here if err is nil
+		} else {
+			fmt.Println("Unknown command:", words[0]) // only print if command is not found
+		}
 	}
-	fmt.Println(finalList)
-	fmt.Println(finalList[0])
-	fmt.Println(finalList[1])
-	return list
 }

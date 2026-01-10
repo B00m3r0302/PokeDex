@@ -26,7 +26,7 @@ func CommandExit(_ string) error {
 }
 
 func CommandHelp(_ string) error {
-	fmt.Println("Welcome to Pokedex!")
+	fmt.Println("Welcome to the Pokedex!")
 	fmt.Printf("Usage:\n\n")
 	for _, command := range CommandsList {
 		fmt.Printf("%s: %s\n", command.name, command.description)

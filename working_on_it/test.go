@@ -22,7 +22,7 @@ func main() {
 
 		cmd, ok := CommandsList[words[0]]
 		if ok {
-			if err := cmd.callback(words[0]); err != nil {
+			if _, err := cmd.callback(words[0]); err != nil {
 				fmt.Println("Error:", err)
 			}
 			// do NOT print anything here if err is nil

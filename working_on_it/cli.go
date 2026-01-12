@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 )
@@ -35,17 +34,10 @@ func CommandHelp(_ string) error {
 	return nil
 }
 
-func CommandMap(_ string) error {
-
-}
-
 type CliCommands struct {
 	name        string
 	description string
 	callback    func(string) error
-}
-
-type MapLocations struct {
 }
 
 func init() {
@@ -59,6 +51,11 @@ func init() {
 			name:        "help",
 			description: "Show this help message",
 			callback:    CommandHelp,
+		},
+		"map": {
+			name:        "map",
+			description: "Map a location area to a Pokedex",
+			callback:    CommandMap,
 		},
 	}
 }

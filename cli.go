@@ -6,12 +6,78 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/B00m3r0302/PokeDex/internal/pokecache"
 )
 
-func resetMapState() {
-	mapOffset = 0
-	mapResults = nil
-	mapTotal = 0
+const pageSize = 20
+
+type MapNavigator struct {
+	offset int
+	total  int
+	cache  *pokecache.Cache
+}
+
+func NewMapNavigator() *MapNavigator {
+	return &MapNavigator{
+		cache: pokecache.NewCache(10 * time.Second),
+	}
+}
+
+func (m *MapNavigator) Reset() {
+	m.offset = 0
+	m.total = 0
+}
+
+func (m *MapNavigator) MoveForward() error {
+	page, err := GetLocationArea(m.offset)
+	if err != nil {
+		return err
+	}
+
+	if m.offset == 0 {
+		m.total = page.Count
+	}
+
+	for _, loc := range page.Results {
+		fmt.Println(loc.Name)
+		m.cache.Add(loc.Name, []byte(loc.Name))
+	}
+
+	m.offset += pageSize
+
+	if m.offset >= m.total {
+		fmt.Println("Reached the end of the location areas.")
+		m.Reset()
+	}
+
+	return nil
+}
+
+func (m *MapNavigator) MoveBackward() error {
+	if m.offset < pageSize {
+		fmt.Println("Already at the beginning of the location areas.")
+		return nil
+	}
+
+	m.offset -= pageSize
+
+	page, err := GetLocationArea(m.offset)
+	if err != nil {
+		return err
+	}
+
+	if m.total == 0 {
+		m.total = page.Count
+	}
+
+	for _, loc := range page.Results {
+		fmt.Println(loc.Name)
+		m.cache.Add(loc.Name, []byte(loc.Name))
+	}
+
+	return nil
 }
 
 func CleanInput(text string) []string {
@@ -26,14 +92,14 @@ func CleanInput(text string) []string {
 }
 
 func CommandExit(_ string) error {
-	resetMapState()
+	navigator.Reset()
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
 func CommandHelp(_ string) error {
-	resetMapState()
+	navigator.Reset()
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Printf("Usage:\n\n")
 	for _, command := range CommandsList {
@@ -60,93 +126,12 @@ func GetLocationArea(offset int) (LocationAreaResponse, error) {
 }
 
 func CommandMap(_ string) error {
-	// If mapResults is empty, fetch the first page
-	if mapOffset == 0 || len(mapResults) == 0 {
-		page, err := GetLocationArea(0)
-		if err != nil {
-			return err
-		}
-		mapResults = page.Results
-		mapTotal = page.Count
-	}
-
-	// Calculate how many times to return
-	start := mapOffset
-	end := mapOffset + 20
-	if end > len(mapResults) {
-		end = len(mapResults)
-	}
-
-	// Print current batch
-	for _, loc := range mapResults[start:end] {
-		fmt.Println(loc.Name)
-	}
-
-	mapOffset = end
-
-	// Fetch next page if needed
-	if mapOffset >= len(mapResults) && mapOffset < mapTotal {
-		page, err := GetLocationArea(len(mapResults))
-		if err != nil {
-			return err
-		}
-		mapResults = append(mapResults, page.Results...)
-	}
-
-	// Reset if we've reached the total
-	if mapOffset >= mapTotal {
-		fmt.Println("Reached all of the location areas.")
-		mapOffset = 0
-		mapResults = nil
-		mapTotal = 0
-	}
-
-	return nil
+	return navigator.MoveForward()
 }
 
 func CommandMapB(_ string) error {
 	// If mapResults is empty, fetch the first page
-	if mapOffset == 0 || len(mapResults) == 0 {
-		page, err := GetLocationArea(0)
-		if err != nil {
-			return err
-		}
-		mapResults = page.Results
-		mapTotal = page.Count
-	}
-
-	// Calculate how many times to return
-	start := mapOffset - 20
-	end := mapOffset + 20
-	if end > len(mapResults) {
-		end = len(mapResults)
-	}
-
-	// Print current batch
-	for _, loc := range mapResults[start:end] {
-		fmt.Println(loc.Name)
-	}
-
-	mapOffset = end
-
-	// Fetch next page if needed
-	if mapOffset >= len(mapResults) && mapOffset < mapTotal {
-		page, err := GetLocationArea(len(mapResults))
-		if err != nil {
-			return err
-		}
-		mapResults = append(mapResults, page.Results...)
-	}
-
-	// Reset if we've reached the total
-	if mapOffset >= mapTotal {
-		fmt.Println("Reached all of the location areas.")
-		mapOffset = 0
-		mapResults = nil
-		mapTotal = 0
-	}
-
-	return nil
+	return navigator.MoveBackward()
 }
 
 type LocationAreaResponse struct {
@@ -161,11 +146,7 @@ type NameURL struct {
 
 var (
 	CommandsList map[string]CliCommands
-
-	// State for the "map" command
-	mapOffset  int
-	mapResults []NameURL
-	mapTotal   int
+	navigator    *MapNavigator
 )
 
 type CliCommands struct {
@@ -175,6 +156,9 @@ type CliCommands struct {
 }
 
 func init() {
+
+	navigator = NewMapNavigator()
+
 	CommandsList = map[string]CliCommands{
 		"exit": {
 			name:        "exit",

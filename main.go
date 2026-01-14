@@ -19,10 +19,12 @@ func main() {
 		if len(words) == 0 {
 			continue
 		}
-
+		if len(words) == 1 {
+			words = append(words, "")
+		}
 		cmd, ok := CommandsList[words[0]]
 		if ok {
-			if err := cmd.callback(words[0]); err != nil {
+			if err := cmd.callback(words[0], &Arguments{argument: words[1:]}); err != nil {
 				fmt.Println("Error:", err)
 			}
 			// do NOT print anything here if err is nil

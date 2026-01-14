@@ -1,84 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/B00m3r0302/PokeDex/internal/pokecache"
 )
-
-const pageSize = 20
-
-type MapNavigator struct {
-	offset int
-	total  int
-	cache  *pokecache.Cache
-}
-
-func NewMapNavigator() *MapNavigator {
-	return &MapNavigator{
-		cache: pokecache.NewCache(10 * time.Second),
-	}
-}
-
-func (m *MapNavigator) Reset() {
-	m.offset = 0
-	m.total = 0
-}
-
-func (m *MapNavigator) MoveForward() error {
-	page, err := GetLocationArea(m.offset)
-	if err != nil {
-		return err
-	}
-
-	if m.offset == 0 {
-		m.total = page.Count
-	}
-
-	for _, loc := range page.Results {
-		fmt.Println(loc.Name)
-		m.cache.Add(loc.Name, []byte(loc.Name))
-	}
-
-	m.offset += pageSize
-
-	if m.offset >= m.total {
-		fmt.Println("Reached the end of the location areas.")
-		m.Reset()
-	}
-
-	return nil
-}
-
-func (m *MapNavigator) MoveBackward() error {
-	if m.offset < pageSize {
-		fmt.Println("Already at the beginning of the location areas.")
-		return nil
-	}
-
-	m.offset -= pageSize
-
-	page, err := GetLocationArea(m.offset)
-	if err != nil {
-		return err
-	}
-
-	if m.total == 0 {
-		m.total = page.Count
-	}
-
-	for _, loc := range page.Results {
-		fmt.Println(loc.Name)
-		m.cache.Add(loc.Name, []byte(loc.Name))
-	}
-
-	return nil
-}
 
 func CleanInput(text string) []string {
 	list := strings.Fields(text)
@@ -91,15 +17,15 @@ func CleanInput(text string) []string {
 	return finalList
 }
 
-func CommandExit(_ string) error {
-	navigator.Reset()
+func CommandExit(_ string, arguments *Arguments) error {
+	locationavigator.Reset()
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func CommandHelp(_ string) error {
-	navigator.Reset()
+func CommandHelp(_ string, arguments *Arguments) error {
+	locationavigator.Reset()
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Printf("Usage:\n\n")
 	for _, command := range CommandsList {
@@ -108,57 +34,35 @@ func CommandHelp(_ string) error {
 	return nil
 }
 
-func GetLocationArea(offset int) (LocationAreaResponse, error) {
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area?offset=%d&limit=20", offset)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return LocationAreaResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	var apiResp LocationAreaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return LocationAreaResponse{}, err
-	}
-
-	return apiResp, nil
+func CommandExplore(text string, arguments *Arguments) error {
+	return nil
 }
 
-func CommandMap(_ string) error {
-	return navigator.MoveForward()
+func CommandMap(_ string, arguments *Arguments) error {
+	return locationavigator.LocationAreaMoveForward()
 }
 
-func CommandMapB(_ string) error {
+func CommandMapB(_ string, arguments *Arguments) error {
 	// If mapResults is empty, fetch the first page
-	return navigator.MoveBackward()
-}
-
-type LocationAreaResponse struct {
-	Count   int       `json:"count"`
-	Results []NameURL `json:"results"`
-}
-
-type NameURL struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
+	return locationavigator.LocationAreaMoveBackward()
 }
 
 var (
-	CommandsList map[string]CliCommands
-	navigator    *MapNavigator
+	CommandsList     map[string]CliCommands
+	locationavigator *MapNavigator
+	locationpokemon  *LocationPokemon
 )
 
 type CliCommands struct {
 	name        string
 	description string
-	callback    func(string) error
+	callback    func(string, *Arguments) error
 }
 
 func init() {
 
-	navigator = NewMapNavigator()
-
+	locationavigator = NewMapNavigator()
+	locationpokemon = NewLocationPokemon()
 	CommandsList = map[string]CliCommands{
 		"exit": {
 			name:        "exit",
@@ -179,6 +83,11 @@ func init() {
 			name:        "mapb",
 			description: "Move back in location areas",
 			callback:    CommandMapB,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Get Pokemon in location areas",
+			callback:    LocationAreaShowPokemon,
 		},
 	}
 }

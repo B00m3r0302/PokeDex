@@ -21,7 +21,11 @@ type Arguments struct {
 }
 
 type PokemonResponse struct {
-	Pokemon []PokemonInfo `json:"pokemon"`
+	PokemonEncounters []PokemonEncounter `json:"pokemon_encounters"`
+}
+
+type PokemonEncounter struct {
+	Pokemon PokemonInfo `json:"pokemon"`
 }
 
 type PokemonInfo struct {
@@ -36,7 +40,10 @@ func NewLocationPokemon() *LocationPokemon {
 }
 
 func LocationAreaShowPokemon(_ string, arguments *Arguments) error {
-	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", "1")
+	if len(arguments.argument) == 0 {
+		return fmt.Errorf("please provide a location area name")
+	}
+	url := fmt.Sprintf("https://pokeapi.co/api/v2/location-area/%s", arguments.argument[0])
 	var pokemon PokemonResponse
 	resp, err := http.Get(url)
 	if err != nil {
@@ -54,7 +61,10 @@ func LocationAreaShowPokemon(_ string, arguments *Arguments) error {
 		return err
 	}
 
-	fmt.Println(PokemonInfo{})
+	fmt.Println("Found Pokemon:")
+	for _, encounter := range pokemon.PokemonEncounters {
+		fmt.Printf(" - %s\n", encounter.Pokemon.Name)
+	}
 	return nil
 
 }

@@ -51,6 +51,7 @@ var (
 	CommandsList     map[string]CliCommands
 	locationavigator *MapNavigator
 	locationpokemon  *LocationPokemon
+	pokeDex          *PokeDex
 )
 
 type CliCommands struct {
@@ -63,6 +64,8 @@ func init() {
 
 	locationavigator = NewMapNavigator()
 	locationpokemon = NewLocationPokemon()
+	pokeDex = NewPokeDex()
+
 	CommandsList = map[string]CliCommands{
 		"exit": {
 			name:        "exit",
@@ -88,6 +91,11 @@ func init() {
 			name:        "explore",
 			description: "Get Pokemon in location areas",
 			callback:    LocationAreaShowPokemon,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Attempt to catch a pokemon",
+			callback:    CatchPokemon,
 		},
 	}
 }

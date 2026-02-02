@@ -21,7 +21,10 @@ func NewCache(interval time.Duration) *Cache {
 		cacheEntry: make(map[string]CacheEntry),
 		interval:   interval,
 	}
-	go cache.reapLoop()
+
+	if interval > 0 {
+		go cache.reapLoop()
+	}
 	return cache
 }
 
@@ -64,4 +67,15 @@ func (c *Cache) reapLoop() *Cache {
 		c.mutex.Unlock()
 	}
 	return c
+}
+
+func (c *Cache) Keys() []string {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	keys := make([]string, 0, len(c.cacheEntry))
+	for key := range c.cacheEntry {
+		keys = append(keys, key)
+	}
+	return keys
 }

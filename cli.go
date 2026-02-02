@@ -102,5 +102,10 @@ func init() {
 			description: "Inspect a pokemon",
 			callback:    InspectPokemon,
 		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Get a list of pokemon in the pokedex",
+			callback:    ListPokemon,
+		},
 	}
 }

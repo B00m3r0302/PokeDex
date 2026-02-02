@@ -18,7 +18,7 @@ type PokeDex struct {
 
 func NewPokeDex() *PokeDex {
 	return &PokeDex{
-		cache: pokecache.NewCache(10 * time.Second),
+		cache: pokecache.NewCache(0 * time.Second),
 	}
 }
 
@@ -34,8 +34,8 @@ type Pokemon struct {
 	name string
 }
 
-func (p *PokeDex) AddPokemon(argument string) {
-	p.cache.Add(argument, []byte(argument))
+func (p *PokeDex) AddPokemon(argument string, body []byte) {
+	p.cache.Add(argument, body)
 }
 
 func CatchPokemon(_ string, arguments *Arguments) error {
@@ -69,8 +69,7 @@ func CatchPokemon(_ string, arguments *Arguments) error {
 		return nil
 	}
 
-	pokeDex.AddPokemon(arguments.argument[0])
+	pokeDex.AddPokemon(arguments.argument[0], body)
 	fmt.Printf("%s was caught!\n", arguments.argument[0])
-	pokeDex.AddPokemon(arguments.argument[0])
 	return nil
 }

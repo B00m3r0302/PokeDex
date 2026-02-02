@@ -71,5 +71,6 @@ func CatchPokemon(_ string, arguments *Arguments) error {
 
 	pokeDex.AddPokemon(arguments.argument[0])
 	fmt.Printf("%s was caught!\n", arguments.argument[0])
+	pokeDex.AddPokemon(arguments.argument[0])
 	return nil
 }
